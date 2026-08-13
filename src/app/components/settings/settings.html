@@ -1,0 +1,185 @@
+<div class="settings-container">
+  <!-- Left Side: Forms and Customizers -->
+  <div class="settings-main-panel">
+    <header class="settings-header">
+      <h1>Settings ⚙️</h1>
+      <p>Customize your profile, sound preferences, theme colors, and defaults.</p>
+    </header>
+
+    <div class="settings-sections">
+      <!-- Section 1: User Profile Details -->
+      <section class="settings-card-section">
+        <div class="section-title-wrapper">
+          <span class="section-num">01</span>
+          <h3>User Profile Details</h3>
+        </div>
+        
+        <form (submit)="$event.preventDefault()" class="settings-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="prof-username">Full Name</label>
+              <input 
+                id="prof-username"
+                type="text" 
+                [ngModel]="taskService.username()" 
+                (ngModelChange)="taskService.username.set($event)"
+                name="username"
+                placeholder="Raushan Gupta"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="prof-email">Email Address</label>
+              <input 
+                id="prof-email"
+                type="email" 
+                [ngModel]="taskService.userEmail()" 
+                (ngModelChange)="taskService.userEmail.set($event)"
+                name="userEmail"
+                placeholder="raushan@example.com"
+                required
+              />
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Section 2: Task Preferences -->
+      <section class="settings-card-section">
+        <div class="section-title-wrapper">
+          <span class="section-num">02</span>
+          <h3>Task Preferences & Sounds</h3>
+        </div>
+
+        <form (submit)="$event.preventDefault()" class="settings-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="pref-priority">Default Task Priority</label>
+              <select 
+                id="pref-priority" 
+                [ngModel]="taskService.defaultPriority()" 
+                (ngModelChange)="taskService.defaultPriority.set($event)"
+                name="defaultPriority"
+              >
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="pref-category">Default Task Category</label>
+              <select 
+                id="pref-category" 
+                [ngModel]="taskService.defaultCategory()" 
+                (ngModelChange)="taskService.defaultCategory.set($event)"
+                name="defaultCategory"
+              >
+                @for (cat of taskService.categories(); track cat.id) {
+                  <option [value]="cat.name">{{ cat.icon }} {{ cat.name }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Sound Effects checkbox toggler -->
+          <div class="toggle-group-row">
+            <div class="toggle-label-desc">
+              <strong>Completion Chimes Sound 🎵</strong>
+              <span>Plays a synthesized arpeggio chime when checking off a task.</span>
+            </div>
+            <label class="switch-control">
+              <input 
+                type="checkbox" 
+                [ngModel]="taskService.soundCompletionEnabled()" 
+                (ngModelChange)="taskService.soundCompletionEnabled.set($event)"
+                name="soundCompletionEnabled"
+              />
+              <span class="slider-round"></span>
+            </label>
+          </div>
+        </form>
+      </section>
+
+      <!-- Section 3: Workspace Theme Accent -->
+      <section class="settings-card-section">
+        <div class="section-title-wrapper">
+          <span class="section-num">03</span>
+          <h3>Workspace Brand Accent</h3>
+        </div>
+        <p class="section-subdesc">Select a theme tint to recolor highlights, active states, and custom buttons globally.</p>
+
+        <div class="themes-accent-grid">
+          @for (option of themeOptions; track option.value) {
+            <div 
+              class="theme-accent-card"
+              [class.active]="taskService.themeAccent() === option.value"
+              (click)="taskService.themeAccent.set(option.value)"
+              [style.--accent-color]="option.color"
+            >
+              <div class="card-glow-dot"></div>
+              <div class="theme-card-body">
+                <strong>{{ option.label }}</strong>
+                <span>{{ option.description }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Right Side: Action utilities side panel -->
+  <div class="settings-side-panel">
+    <div class="utility-box data-mgmt-card">
+      <div class="box-header">
+        <div class="mgmt-icon-badge">💾</div>
+        <div class="box-titles">
+          <h3>Database Backup & Reset</h3>
+          <p>Export your dashboard to a JSON backup or wipe tasks.</p>
+        </div>
+      </div>
+
+      <div class="mgmt-actions-list">
+        <!-- Export Backup -->
+        <button class="mgmt-btn export" (click)="exportTasks()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export Tasks Backup
+        </button>
+
+        <!-- Import Backup -->
+        <input 
+          type="file" 
+          #fileInput 
+          (change)="importTasks($event)" 
+          accept=".json" 
+          style="display: none;" 
+        />
+        <button class="mgmt-btn import" (click)="fileInput.click()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Import JSON Backup
+        </button>
+
+        <div class="divider"></div>
+
+        <!-- Wipe tasks list -->
+        <button class="mgmt-btn clear-all" (click)="clearDatabase()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Wipe Tasks Database
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

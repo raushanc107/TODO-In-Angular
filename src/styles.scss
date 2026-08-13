@@ -1,1 +1,121 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root, body.theme-blue {
+  --primary-glow: #3b82f6;
+  --primary-glow-hover: #2563eb;
+  --primary-glow-light: rgba(59, 130, 246, 0.1);
+  --primary-glow-light-border: rgba(59, 130, 246, 0.25);
+  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+body.theme-rose {
+  --primary-glow: #f43f5e;
+  --primary-glow-hover: #e11d48;
+  --primary-glow-light: rgba(244, 63, 94, 0.1);
+  --primary-glow-light-border: rgba(244, 63, 94, 0.25);
+  --primary-gradient: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+}
+
+body.theme-purple {
+  --primary-glow: #a855f7;
+  --primary-glow-hover: #9333ea;
+  --primary-glow-light: rgba(168, 85, 247, 0.1);
+  --primary-glow-light-border: rgba(168, 85, 247, 0.25);
+  --primary-gradient: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+}
+
+body.theme-emerald {
+  --primary-glow: #10b981;
+  --primary-glow-hover: #059669;
+  --primary-glow-light: rgba(16, 185, 129, 0.1);
+  --primary-glow-light-border: rgba(16, 185, 129, 0.25);
+  --primary-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #0b0f19;
+  color: #f1f5f9;
+}
+
+// Global brand styles overrides
+.sidenav .logo-icon {
+  background: var(--primary-gradient) !important;
+}
+.sidenav .toggle-btn:hover {
+  color: var(--primary-glow) !important;
+  background: var(--primary-glow-light) !important;
+  border-color: var(--primary-glow-light-border) !important;
+}
+.sidenav-menu .menu-item.active {
+  background: var(--primary-glow-light) !important;
+  color: var(--primary-glow) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+  .icon-wrapper {
+    color: var(--primary-glow) !important;
+  }
+}
+.sidenav-menu .menu-item:hover:not(.active) {
+  color: var(--primary-glow) !important;
+  .icon-wrapper {
+    color: var(--primary-glow) !important;
+  }
+}
+
+// Buttons
+.add-task-btn, .submit-btn, .quick-add-task-btn, .add-btn, .confirm-btn, .save-btn, .primary-btn {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  color: #ffffff !important;
+  &:hover {
+    opacity: 0.95;
+    box-shadow: 0 4px 12px var(--primary-glow-light-border) !important;
+  }
+}
+
+.add-cat-btn {
+  background: var(--primary-glow-light) !important;
+  border-color: var(--primary-glow-light-border) !important;
+  color: var(--primary-glow) !important;
+  &:hover {
+    background: var(--primary-glow) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+  }
+}
+
+// Focus ring & forms controls
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary-glow) !important;
+  box-shadow: 0 0 0 2px var(--primary-glow-light) !important;
+}
+
+// Checkboxes
+.checkbox-btn:hover {
+  border-color: var(--primary-glow) !important;
+}
+.task-row-item.completed .checkbox-btn {
+  background-color: var(--primary-glow) !important;
+  border-color: var(--primary-glow) !important;
+}
+
+// Tabs highlights
+.tabs-header button.active {
+  border-color: var(--primary-glow) !important;
+  color: var(--primary-glow) !important;
+}
+
+// Calendar active selections
+.calendar-grid-panel .day-cell.active-today {
+  border-color: var(--primary-glow) !important;
+  color: var(--primary-glow) !important;
+}
+.calendar-grid-panel .day-cell.selected {
+  background: var(--primary-gradient) !important;
+  color: #ffffff !important;
+}

@@ -1,0 +1,127 @@
+<div class="calendar-container">
+  <!-- Left Side: Calendar Month View Grid -->
+  <div class="calendar-grid-panel">
+    <!-- Month Controls Header -->
+    <header class="calendar-header">
+      <div class="header-left">
+        <h1>Schedule 📅</h1>
+        <p>Browse tasks and plan ahead dynamically.</p>
+      </div>
+
+      <div class="header-controls">
+        <button class="nav-btn" (click)="prevMonth()" aria-label="Previous Month">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <span class="month-label">{{ monthYearLabel() }}</span>
+        <button class="nav-btn" (click)="nextMonth()" aria-label="Next Month">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+        <button class="today-btn" (click)="goToToday()">Today</button>
+      </div>
+    </header>
+
+    <!-- Weekdays Header Row -->
+    <div class="weekdays-row">
+      <div class="weekday-label" *ngFor="let dayName of weekdays">{{ dayName }}</div>
+    </div>
+
+    <!-- Monthly Grid cells (Scrollable when height is constrained) -->
+    <div class="grid-days-wrapper">
+      <div class="grid-days">
+        <div 
+          class="grid-day-cell"
+          *ngFor="let day of calendarDays()"
+          [class.outside-month]="!day.isCurrentMonth"
+          [class.today]="day.isToday"
+          [class.selected]="day.isSelected"
+          (click)="selectDay(day)"
+          (dblclick)="addNewTaskOnSelectedDate()"
+        >
+          <span class="day-number">{{ day.dayNumber }}</span>
+          
+          <!-- Priority dots representing task counts due on this day -->
+          <div class="task-priority-indicators" *ngIf="day.tasks.length > 0">
+            <span class="indicator-dot high" *ngIf="day.tasksByPriority.high > 0" title="{{ day.tasksByPriority.high }} high priority task(s)"></span>
+            <span class="indicator-dot medium" *ngIf="day.tasksByPriority.medium > 0" title="{{ day.tasksByPriority.medium }} medium priority task(s)"></span>
+            <span class="indicator-dot low" *ngIf="day.tasksByPriority.low > 0" title="{{ day.tasksByPriority.low }} low priority task(s)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Selected Day Tasks Details Side Drawer -->
+  <div class="calendar-detail-panel">
+    <header class="detail-header">
+      <div class="detail-date-title">
+        <h3>{{ selectedDate().toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric' }) }}</h3>
+        <p>Schedule list</p>
+      </div>
+      <button class="add-selected-task-btn" (click)="addNewTaskOnSelectedDate()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Task
+      </button>
+    </header>
+
+    <div class="detail-list-wrapper">
+      <div class="task-rows-container" *ngIf="selectedDateTasks().length > 0; else noTasksTpl">
+        <div 
+          class="task-row-item" 
+          *ngFor="let item of selectedDateTasks()" 
+          [class.completed]="item.completed"
+        >
+          <button class="checkbox-btn" (click)="toggleTask(item.id)" aria-label="Toggle task status">
+            <div class="checkbox-inner">
+              <svg *ngIf="item.completed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </button>
+
+          <div class="task-info">
+            <span class="task-title">{{ item.title }}</span>
+            <div class="task-meta">
+              <span 
+                class="meta-tag category"
+                [style.color]="taskService.getCategoryColor(item.category)"
+                [style.borderColor]="taskService.getCategoryColor(item.category) + '30'"
+                [style.background]="taskService.getCategoryColor(item.category) + '12'"
+              >{{ item.category }}</span>
+              <span class="meta-tag priority" [class]="item.priority">{{ item.priority }}</span>
+            </div>
+          </div>
+
+          <div class="row-actions">
+            <button class="edit-btn" (click)="taskService.openModal(item)" aria-label="Edit task">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+            </button>
+            <button class="delete-btn" (click)="deleteTask(item.id)" aria-label="Delete task">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noTasksTpl>
+        <div class="no-tasks-fallback">
+          <div class="fallback-icon">⛱️</div>
+          <h3>No tasks scheduled</h3>
+          <p>Double-click any calendar day or click "New Task" above to add items due on this date.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

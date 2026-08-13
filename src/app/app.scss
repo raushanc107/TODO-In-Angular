@@ -1,0 +1,19 @@
+.main-layout {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #0b0f19;
+}
+
+.content-area {
+    flex-grow: 1;
+    height: 100%;
+    overflow: auto;
+    padding: 2rem;
+    box-sizing: border-box;
+    color: #f8fafc;
+    background-color: #0b0f19;
+}

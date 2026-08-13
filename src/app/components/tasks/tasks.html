@@ -1,0 +1,132 @@
+<div class="tasks-container">
+  <!-- Header with Search & Filter Controls -->
+  <header class="tasks-header">
+    <div class="header-left">
+      <h1>My Tasks 📑</h1>
+      <p>Manage, filter, and organize your work checklist.</p>
+    </div>
+    
+    <div class="controls-toolbar">
+      <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          placeholder="Search tasks..." 
+          [ngModel]="searchQuery()" 
+          (ngModelChange)="searchQuery.set($event)"
+        />
+      </div>
+
+      <div class="filter-group">
+        <!-- Priority Filter -->
+        <select [ngModel]="selectedPriority()" (ngModelChange)="selectedPriority.set($event)" aria-label="Filter by priority">
+          <option value="all">All Priorities</option>
+          <option value="high">High Priority</option>
+          <option value="medium">Medium Priority</option>
+          <option value="low">Low Priority</option>
+        </select>
+
+        <!-- Category Filter -->
+        <select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)" aria-label="Filter by category">
+          <option value="all">All Categories</option>
+          @for (cat of categories(); track cat) {
+            @if (cat !== 'all') {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          }
+        </select>
+      </div>
+
+      <button class="add-task-toolbar-btn" (click)="taskService.openModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Task
+      </button>
+    </div>
+  </header>
+
+  <!-- Tasks List Content -->
+  <section class="tasks-list-box">
+    <div class="list-header">
+      <h2>Task Directory</h2>
+      <span class="results-count">Showing {{ filteredTasks().length }} of {{ tasks().length }} items</span>
+    </div>
+
+    <!-- Reusable Directory Tabs -->
+    <div class="directory-tabs">
+      <button class="tab-btn" [class.active]="selectedTab() === 'active'" (click)="selectedTab.set('active')">
+        Active <span class="tab-badge" [class.active]="selectedTab() === 'active'">{{ activeCount() }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="selectedTab() === 'completed'" (click)="selectedTab.set('completed')">
+        Completed <span class="tab-badge" [class.active]="selectedTab() === 'completed'">{{ completedCount() }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="selectedTab() === 'all'" (click)="selectedTab.set('all')">
+        All <span class="tab-badge" [class.active]="selectedTab() === 'all'">{{ allCount() }}</span>
+      </button>
+    </div>
+
+    <div class="task-rows-wrapper">
+      @for (item of filteredTasks(); track item.id) {
+        <div class="task-row" [class.completed]="item.completed">
+          <button class="checkbox-btn" (click)="toggleTask(item.id)" aria-label="Toggle task status">
+            <div class="checkbox-inner">
+              @if (item.completed) {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              }
+            </div>
+          </button>
+
+          <div class="task-info">
+            <span class="task-title">{{ item.title }}</span>
+            <div class="task-meta">
+              <span 
+                class="meta-tag category"
+                [style.color]="taskService.getCategoryColor(item.category)"
+                [style.borderColor]="taskService.getCategoryColor(item.category) + '30'"
+                [style.background]="taskService.getCategoryColor(item.category) + '12'"
+              >{{ item.category }}</span>
+              <span class="meta-tag priority" [class]="item.priority">{{ item.priority }}</span>
+              <span class="meta-tag due-date">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                {{ item.dueDate }}
+              </span>
+            </div>
+          </div>
+
+          <div class="row-actions">
+            <button class="edit-btn" (click)="taskService.openModal(item)" aria-label="Edit task">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+            </button>
+            <button class="delete-btn" (click)="taskService.requestDelete(item.id)" aria-label="Delete task">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="no-tasks-fallback">
+          <div class="fallback-icon">📂</div>
+          <h3>No tasks found</h3>
+          <p>Try refining your search term or filtering options to locate your items.</p>
+        </div>
+      }
+    </div>
+  </section>
+</div>

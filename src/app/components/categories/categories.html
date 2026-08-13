@@ -1,0 +1,296 @@
+<div class="categories-container">
+  <!-- Left Side: Categories Grid and Create Panel -->
+  <div class="categories-main-panel">
+    <header class="categories-main-header">
+      <div class="header-left">
+        <h1>Categories 🏷️</h1>
+        <p>Organize, track completion progress, and style your workspace.</p>
+      </div>
+      @if (!isAddingCategory()) {
+        <button class="add-cat-btn" (click)="openAddForm()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Category
+        </button>
+      }
+    </header>
+
+    <!-- Inline Add Category Console -->
+    @if (isAddingCategory()) {
+      <div class="category-form-card">
+        <div class="form-card-header">
+          <h3>Create New Category</h3>
+          <button class="close-card-btn" (click)="closeAddForm()">&times;</button>
+        </div>
+
+        <form (submit)="$event.preventDefault(); submitAddCategory()" class="inline-form">
+          <div class="form-group">
+            <label>Category Name</label>
+            <input 
+              type="text" 
+              placeholder="e.g. Health, Shopping..."
+              [ngModel]="newCategoryName()"
+              (ngModelChange)="newCategoryName.set($event)"
+              name="newCategoryName"
+              required
+              maxlength="20"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Theme Color</label>
+            <div class="color-picker-grid">
+              @for (color of colorPresets; track color) {
+                <button 
+                  type="button"
+                  [style.background]="color"
+                  class="color-option"
+                  [class.active]="newCategoryColor() === color"
+                  (click)="newCategoryColor.set(color)"
+                ></button>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Select Icon</label>
+            <div class="icon-picker-grid">
+              @for (icon of iconPresets; track icon) {
+                <button 
+                  type="button"
+                  class="icon-option"
+                  [class.active]="newCategoryIcon() === icon"
+                  (click)="newCategoryIcon.set(icon)"
+                >
+                  {{ icon }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="cancel-btn" (click)="closeAddForm()">Cancel</button>
+            <button type="submit" class="submit-btn">Create Category</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Category Grid Cards -->
+    <div class="categories-grid-wrapper">
+      <div class="categories-grid">
+        @for (stat of categoryStats(); track stat.id) {
+          <div 
+            class="category-card"
+            [class.active]="selectedCategoryId() === stat.id"
+            (click)="selectCategory(stat.id)"
+            [style.--cat-accent]="stat.color"
+          >
+            <div class="card-header">
+              <div class="cat-icon-badge" [style.background]="stat.color + '15'">
+                <span class="cat-icon">{{ stat.icon }}</span>
+              </div>
+              <span class="cat-count">{{ stat.active }} active</span>
+            </div>
+
+            <div class="card-body">
+              <h3>{{ stat.name }}</h3>
+              <div class="task-summary-row">
+                <span>{{ stat.completed }} / {{ stat.total }} completed</span>
+                <span>{{ stat.progress | percent }}</span>
+              </div>
+              <!-- Progress bar -->
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" [style.width]="(stat.progress * 100) + '%'"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Category Tasks List & Drawer details -->
+  @if (selectedCategory()) {
+    <div class="categories-detail-panel" [style.--cat-accent]="selectedCategory().color">
+      <header class="detail-header">
+        <div class="category-badge-title">
+          <div class="detail-icon" [style.background]="selectedCategory().color + '15'">
+            {{ selectedCategory().icon }}
+          </div>
+          <div class="detail-titles">
+            <h3>{{ selectedCategory().name }}</h3>
+            <p>{{ selectedCategoryTasks().length }} task(s) total</p>
+          </div>
+        </div>
+
+        @if (selectedCategory().name.toLowerCase() !== 'general') {
+          <div class="category-actions">
+            <button class="action-icon-btn edit" (click)="openEditForm()" aria-label="Edit category">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+            </button>
+            <button class="action-icon-btn delete" (click)="openDeleteConfirm()" aria-label="Delete category">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        }
+      </header>
+
+      <!-- Inline Edit Category Form -->
+      @if (isEditingCategory()) {
+        <div class="category-edit-form">
+          <h4>Edit Category Details</h4>
+          <form (submit)="$event.preventDefault(); submitEditCategory()" class="edit-form-inner">
+            <div class="form-group">
+              <label>Category Name</label>
+              <input 
+                type="text"
+                [ngModel]="editCategoryName()"
+                (ngModelChange)="editCategoryName.set($event)"
+                name="editCategoryName"
+                required
+                maxlength="20"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Accent Color</label>
+              <div class="color-picker-grid">
+                @for (color of colorPresets; track color) {
+                  <button 
+                    type="button"
+                    [style.background]="color"
+                    class="color-option"
+                    [class.active]="editCategoryColor() === color"
+                    (click)="editCategoryColor.set(color)"
+                  ></button>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Select Icon</label>
+              <div class="icon-picker-grid">
+                @for (icon of iconPresets; track icon) {
+                  <button 
+                    type="button"
+                    class="icon-option"
+                    [class.active]="editCategoryIcon() === icon"
+                    (click)="editCategoryIcon.set(icon)"
+                  >
+                    {{ icon }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancel</button>
+              <button type="submit" class="save-btn">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      }
+
+      <!-- Category Tasks List Wrapper (Scrollable when constrained) -->
+      <div class="category-tasks-wrapper">
+        @if (selectedCategoryTasks().length > 0) {
+          <div class="task-rows-container">
+            @for (item of selectedCategoryTasks(); track item.id) {
+              <div 
+                class="task-row-item" 
+                [class.completed]="item.completed"
+              >
+                <button class="checkbox-btn" (click)="toggleTask(item.id)" aria-label="Toggle task status">
+                  <div class="checkbox-inner">
+                    <svg *ngIf="item.completed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                </button>
+
+                <div class="task-info">
+                  <span class="task-title">{{ item.title }}</span>
+                  <div class="task-meta">
+                    <span class="meta-tag due-date">Due: {{ item.dueDate }}</span>
+                    <span class="meta-tag priority" [class]="item.priority">{{ item.priority }}</span>
+                  </div>
+                </div>
+
+                <div class="row-actions">
+                  <button class="edit-btn" (click)="taskService.openModal(item)" aria-label="Edit task">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                  </button>
+                  <button class="delete-btn" (click)="deleteTask(item.id)" aria-label="Delete task">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="no-tasks-fallback">
+            <div class="fallback-icon">🧘‍♂️</div>
+            <h3>No tasks in this category</h3>
+            <p>Click "New Task" below to add item directly in this category.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Quick Task Creator Button -->
+      <button class="quick-add-task-btn" (click)="addNewTaskOnSelectedCategory()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Task
+      </button>
+    </div>
+  }
+</div>
+
+<!-- Custom Styled Delete Category Confirmation Modal -->
+@if (isDeleteConfirmOpen()) {
+  <div class="delete-confirm-overlay">
+    <div class="delete-confirm-modal" [style.--cat-accent]="selectedCategory().color">
+      <div class="modal-alert-icon">⚠️</div>
+      <h2>Delete Category?</h2>
+      <p class="warning-text">You are about to delete the category <strong>"{{ selectedCategory().name }}"</strong>. This action cannot be undone.</p>
+
+      <div class="reassign-selection">
+        <label class="checkbox-container">
+          <input 
+            type="checkbox" 
+            [ngModel]="deleteReassignTasks()"
+            (ngModelChange)="deleteReassignTasks.set($event)"
+            name="deleteReassignTasks"
+          />
+          <span class="custom-checkbox"></span>
+          <div class="checkbox-text">
+            <strong>Keep Tasks (Reassign to General)</strong>
+            <span>Tick this to move tasks to General category. Uncheck to delete all tasks in this category.</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button class="cancel-btn" (click)="closeDeleteConfirm()">Cancel</button>
+        <button class="confirm-btn" (click)="confirmDeleteCategory()">Delete Category</button>
+      </div>
+    </div>
+  </div>
+}
