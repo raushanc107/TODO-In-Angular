@@ -1,6 +1,6 @@
 #link
 
-# >**(https://raushanc107.github.io/TODO-In-Angular/main)**
+# >**(https://raushanc107.github.io/TODO-In-Angular)**
 
 # TODO
 
